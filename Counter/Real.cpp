@@ -56,7 +56,6 @@ string Real::plus_Int(string s1, string s2)
 		add += (char)(off + 48);
 		result = add + result;
 	}
-	checkNull();
 	return result;
 }
 
@@ -93,7 +92,6 @@ string Real::plus_Fract(string s1, string s2)
 			throw 1;
 		}
 	}
-	checkNull();
 	return result;
 }
 
@@ -178,6 +176,14 @@ Real& Real::operator=(const Real& R)
 	return *this;
 }
 
+
+Real& Real::operator+=(const Real& R)
+{
+	*this = *this + R;
+	return *this;
+}
+
+
 Real::Real(const Real& R)
 {
 	*this = R;
@@ -205,6 +211,9 @@ Real Real::operator+(const Real& R)
 		result.Integer = plus_Int(Integer, R.Integer);
 	}
 	// + and -
+
+	// удаляет все незначащие нули перед возвратом
+	checkNull();
 	return result;
 }
 
@@ -215,10 +224,22 @@ Real Real::operator+(const int& i)
 }
 
 
-/*Real Real::operator-(const Real& R)
+Real Real::operator-()
 {
-	
-}*/
+	Real result = *this;
+	result.sign = !result.sign;
+	return result;
+}
+
+
+Real Real::operator-(const Real& R)
+{
+	Real result = R;
+	// + and -
+	if (R.sign == NEG)
+		result = -result;
+	result += *this;
+}
 
 
 bool Real::operator==(const Real& R)
@@ -255,10 +276,10 @@ bool operator<(const Real& R1, const Real& R2)
 		return true;
 	if (R1.sign > R2.sign)
 		return false;
-	int I = ((Real)R1).cmp(R1.Integer, R2.Integer);
+	int I = Real::cmp(R1.Integer, R2.Integer);
 	if (I < 0)
 		return true;
-	int r = ((Real)R1).cmp(R1.Fractional, R2.Fractional);
+	int r = Real::cmp(R1.Fractional, R2.Fractional);
 	if (r < 0)
 		return true;
 	return false;
@@ -283,10 +304,10 @@ bool operator>(const Real& R1, const Real& R2)
 		return true;
 	if (R1.sign < R2.sign)
 		return false;
-	int I = ((Real)R1).cmp(R1.Integer, R2.Integer);
+	int I = Real::cmp(R1.Integer, R2.Integer);
 	if (I > 0)
 		return true;
-	int r = ((Real)R1).cmp(R1.Fractional, R2.Fractional);
+	int r = Real::cmp(R1.Fractional, R2.Fractional);
 	if (r > 0)
 		return true;
 	return false;
@@ -312,7 +333,7 @@ ostream& operator<<(const ostream& o, const Real& r)
 }
 
 
-/*Real operator+(const Real& r1, const Real& r2)
+Real operator+(const Real& r1, const Real& r2)
 {
 	Real result = r1;
 	int code = 0;
@@ -321,17 +342,18 @@ ostream& operator<<(const ostream& o, const Real& r)
 	{
 		try
 		{
-			result.Fractional = ((Real)r1).plus_Fract(r1.Fractional, r2.Fractional);
+			result.Fractional = Real::plus_Fract(r1.Fractional, r2.Fractional);
 		}
 		catch (int i)
 		{
 			string add;
 			add += (char)(i + 48);
-			result.Integer = ((Real)r1).plus_Int(result.Integer, add);
+			result.Integer = Real::plus_Int(result.Integer, add);
 		}
-		result.Integer = ((Real)r1).plus_Int(result.Integer, r2.Integer);
+		result.Integer = Real::plus_Int(result.Integer, r2.Integer);
 	}
+	// + and -
 
-	//
+	result.checkNull();
 	return result;
-}*/
+}
